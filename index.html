@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Аудио-новости: проговорить новости</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+	<meta name="viewport" content="width=device-width">
+	<!--<link rel="stylesheet" type="text/css" href="tooltip.css">
+<script src="http://yui.yahooapis.com/3.18.1/build/yui/yui-min.js"></script>-->
+</head>
+
+<body>
+	<h1 style="text-align:center">Audio-News-BetaV6.01 [можете использовать свои RSS]<img src="rss.png">
+	</h1>
+	<!--<audio src='http://tts.voicetech.yandex.net/generate?text="Законопроект%20должен    должна%20была%20попасть%20под%20действие%20законопроекта."&format=mp3&lang=ru-RU&speaker=zahar&emotion=good&key=edcd3e1e-d96a-4d16-802c-fe9517644cce'
+ controls preload 
+>Тег audio не поддерживается вашим браузером. 
+</audio>-->
+
+
+	<form id="customSettings" name="customSettings">
+		<p><b>Если хотите выбрать другие новости, то вставьте ссылку на RSS( в
+		следующее поле), можете выбрать отсюда <a href=
+		"https://news.yandex.ru/export.html">https://news.yandex.ru/export.html</a></b><br>
+
+		<input name="RssUri" placeholder="вашу ссылку на RSS" type="text">
+		<input onclick="rememberRssUri()" type="submit" value=
+		"Подтвердить выбор RSS"></p>
+
+
+		<p><b>Ниже можно выбрать другой голос:</b>
+		</p>
+
+
+		<p><input name="speaker" type="radio" value="jane">женский голос jane<br>
+		<input name="speaker" type="radio" value="omazh">женский голос omazh<br>
+		<input name="speaker" type="radio" value="zahar">мужские голос zahar<br>
+		<input name="speaker" type="radio" value="ermil">мужской голос ermil</p>
+
+
+		<p><input onclick="rememberSpeaker()" type="submit" value=
+		"Подтвердить выбор голоса">
+		</p>
+	</form>
+	<audio controls="" id='audioRss' preload="" style=
+	"transform: scaleY(1.5);margin:0 5%;">Тег audio не поддерживается вашим
+	браузером.</audio>
+
+	<div class="help-tip" id="rss">
+		ng.ru-RssНовости(по-умолчанию, можете свою выбрать-она запомнится на месяц(с
+		помощью cookie)):<br>
+		<br>
+	</div>
+
+
+	<div id="testZone">
+	</div>
+	<script type="text/javascript">
+	function tZ(str){document.getElementById('testZone').innerText+="\n"+str;}
+
+	/*document.onkeypress = function(e) {
+	   // спец. сочетание - не обрабатываем
+	   if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+	   var char = getChar(e);
+
+	   if (!char) return; // спец. символ - не обрабатываем
+
+	   this.value = char.toUpperCase();
+
+	   return false;
+	 };*/
+	 
+	 
+	 window.onkeyup = function(e){
+	 console.log(e.keyCode+" onkeyup")
+	   if(e.keyCode == 32){// нажат пробел(отпущен)
+	       var t=document.getElementById('audioRss')
+	       if(t.paused)
+	           t.play()
+	       else
+	           t.pause()
+	       //e.stopPropagation();
+	       //e.preventDefault();
+	   }
+	   return false;
+	}
+	function rememberRssUri(){
+	var expires = new Date();//now
+	   // set time to one month (31 days) in the future
+	   expires.setTime(expires.getTime() + 1000 * 60 * 60 * 24 * 31);
+	   setCookie('RssUri',customSettings.RssUri.value,expires);
+	}
+
+	function rememberSpeaker(){
+	   SPEAKER=customSettings.speaker.value;
+	   if(SPEAKER!=''){
+	       var expires = new Date()//now
+	       // set time to one month (31 days) in the future
+	       expires.setTime(expires.getTime() + 1000 * 60 * 60 * 24 * 31)
+	       setCookie("speaker",SPEAKER,expires)
+	       //document.cookie = 'speaker=' + escape(SPEAKER);
+	       
+	   }           
+	}
+	function getRssBySite(siteUriRss){//https://news.yandex.ru/politics.rss
+	   var query = 'select *from rss where url="'+siteUriRss+'"'//'select * from html where url="'+siteUriRss+'" and xpath="*"'
+	   var url = 'http://query.yahooapis.com/v1/public/yql?q='+encodeURI(query)+'&format=json&callback=callback';
+	   var script = document.createElement('script');
+	   script.src = url;//запускаем скрипт с сайта query.yahooapis.com (ответ получает function callback)
+	   document.body.appendChild(script);
+	}
+
+	function callback(data) {//записываем в XMLrss наш ответ 
+	   console.log(data); //сам текст ответа находится в data.result[0]
+	   rssItems=data.query.results.item;
+	   
+	   rssItems.forEach(function(item, i, arr) {
+	       document.getElementById('rss').innerHTML+='<p><a href="'+item.link+'" title="'+item.description+'"'+'>'+item.title+'<\/a><\/p>'
+	       //alert( i + ": " + item + " (массив:" + arr + ")" );'<\/BR>'
+	   });
+	}
+	window.onload = function() {
+	   var counterAud=0;
+	   var aud =document.getElementById("audioRss");
+	   rssItems[counterAud].ttsSrc='http://tts.voicetech.yandex.net/generate?text='+encodeURIComponent(rssItems[counterAud].title)+'&format=mp3&lang=ru-RU&speaker='+SPEAKER+'&emotion=good&key=edcd3e1e-d96a-4d16-802c-fe9517644cce'
+	   aud.src = rssItems[0].ttsSrc;
+	   aud.autoplay=true;
+	   counterAud++;
+	   
+	   aud.addEventListener('ended', function(e){  next_sound()    });
+
+	                //ниже обязательно назначаем обработку события:
+	                //          'canplaythrough' - Скрипт выполняется, когда медиа может быть проиграно до конца,
+	                //          без остановок для буферизации
+
+	   //aud.addEventListener('canplaythrough', function(e){//aud.play()
+	   //});
+	   function next_sound(){
+	       rssItems[counterAud].ttsSrc='http://tts.voicetech.yandex.net/generate?text='+encodeURIComponent(rssItems[counterAud].title)+'&format=mp3&lang=ru-RU&speaker='+SPEAKER+'&emotion=good&key=edcd3e1e-d96a-4d16-802c-fe9517644cce'
+	       aud.src = rssItems[counterAud].ttsSrc;
+	       aud.play()
+	       counterAud++;
+	   }
+	}
+
+	function setCookie(name, value, expires, path, domain, secure) {
+	//УСТАНОВКИ ЗНАЧЕНИЯ COOKIE
+	// name - имя cookie
+	// value - значение cookie
+	// [expires] - дата окончания действия cookie (по умолчанию - до конца сессии)
+	// [path] - путь, для которого cookie действительно (по умолчанию - документ, в котором значение было установлено)
+	// [domain] - домен, для которого cookie действительно (по умолчанию - домен, в котором значение было установлено)
+	// [secure] - логическое значение, показывающее требуется ли защищенная передача значения cookie
+	caution =true;
+	   var curCookie = name + "=" + escape(value) +
+	           ((expires) ? "; expires=" + expires.toGMTString() : "") +
+	           ((path) ? "; path=" + path : "") +
+	           ((domain) ? "; domain=" + domain : "") +
+	           ((secure) ? "; secure" : "")
+	   if (!caution || (name + "=" + escape(value)).length <= 4000)
+	           document.cookie = curCookie
+	   else
+	           if (confirm("Cookie превышает 4KB и будет вырезан !"))
+	                   document.cookie = curCookie
+	}
+
+	function getCookie(name) {// name - имя считываемого cookie
+	var prefix = name + "="
+	var cookieStartIndex = document.cookie.indexOf(prefix)
+	if (cookieStartIndex == -1)
+	       return null
+	var cookieEndIndex = document.cookie.indexOf(";", cookieStartIndex + prefix.length)
+	if (cookieEndIndex == -1)
+	       cookieEndIndex = document.cookie.length
+	return unescape(document.cookie.substring(cookieStartIndex + prefix.length, cookieEndIndex))
+	}
+
+	var XMLrss;
+	var rssItems;
+	var RssUri;
+	try{
+	   RssUri =getCookie('RssUri');
+	   if(RssUri==""||RssUri==null) RssUri="http://www.ng.ru/rss/";    
+	   }
+	catch(e){
+	   alert('Извините, мой сервис не адаптирован под вашу RSS, но от яндекс и ng работает точно');    
+	   RssUri ="http://www.ng.ru/rss/";
+	   }
+	getRssBySite(RssUri);
+
+	var SPEAKER="zahar"
+	try{
+	   SPEAKER =getCookie('speaker');
+	   if(SPEAKER==""||SPEAKER==null) 
+	       SPEAKER="zahar";    
+	}
+	catch(e){   SPEAKER="zahar";}
+
+	</script>
+
+	<div style="text-align:center">
+		<p>© 2016 Ayazzali</p>
+	</div>
+</body>
+</html>
