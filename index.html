@@ -104,7 +104,7 @@
 	}
 	function getRssBySite(siteUriRss){//https://news.yandex.ru/politics.rss
 	   var query = 'select *from rss where url="'+siteUriRss+'"'//'select * from html where url="'+siteUriRss+'" and xpath="*"'
-	   var url = 'http://query.yahooapis.com/v1/public/yql?q='+encodeURI(query)+'&format=json&callback=callback';
+	   var url = 'https://query.yahooapis.com/v1/public/yql?q='+encodeURI(query)+'&format=json&callback=callback';
 	   var script = document.createElement('script');
 	   script.src = url;//запускаем скрипт с сайта query.yahooapis.com (ответ получает function callback)
 	   document.body.appendChild(script);
